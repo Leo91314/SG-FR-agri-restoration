@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Large / generated data (not for public repo)
+data/
+results/
+external_baselines/
+tmp/
+paper/
+未命名文件夹/
+*.zip
+
+# Internal planning notes
+Codex.md
+plan.md
+task_plan.md
+progress.md
+findings.md
+CEA_paper_draft.md
+农业无人机语义频率调制隐式恢复_技术路线文档.md
+docs/
