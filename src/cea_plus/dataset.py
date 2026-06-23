@@ -176,6 +176,29 @@ def load_loveda_dataset(
     return samples
 
 
+def cwfid_split_ids(dataset_root: Path, split: str) -> list[int]:
+    """Return CWFID image ids for a split, with train/test leakage removed.
+
+    The official CWFID train_test_split.yaml lists image 28 in BOTH train and test
+    (a direct train/test leak). We keep the official test set intact and drop any
+    overlapping id from train, so the frozen segmenter is never trained on a test image.
+    """
+    import yaml
+
+    dataset_root = Path(dataset_root)
+    split_file = dataset_root / "train_test_split.yaml"
+    splits = yaml.safe_load(split_file.read_text(encoding="utf-8"))
+    train_ids = [int(i) for i in splits.get("train", [])]
+    test_ids = [int(i) for i in splits.get("test", [])]
+    overlap = set(train_ids) & set(test_ids)
+    key = split.lower()
+    if key == "train":
+        return [i for i in train_ids if i not in overlap]
+    if key == "test":
+        return list(test_ids)
+    return [int(i) for i in splits.get(key, [])]
+
+
 def load_cwfid_dataset(
     dataset_root: Path,
     split: str = "train",
@@ -201,8 +224,7 @@ def load_cwfid_dataset(
 
     split_file = dataset_root / "train_test_split.yaml"
     if split_file.exists():
-        splits = yaml.safe_load(split_file.read_text(encoding="utf-8"))
-        ids = [int(i) for i in splits.get(split.lower(), [])]
+        ids = cwfid_split_ids(dataset_root, split)
     else:
         ids = sorted(int(p.stem.split("_")[0]) for p in _image_files(image_dir))
 

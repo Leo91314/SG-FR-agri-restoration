@@ -146,6 +146,45 @@ def semantic_frequency_components(
     )
 
 
+def clahe_restore(low_res: np.ndarray, output_shape: tuple[int, int]) -> np.ndarray:
+    """Engineering baseline: bicubic upsample + CLAHE on the luminance channel."""
+    from skimage import color, exposure
+
+    up = bicubic_restore(low_res, output_shape)
+    lab = color.rgb2lab(np.clip(up, 0.0, 1.0))
+    lab[..., 0] = exposure.equalize_adapthist(lab[..., 0] / 100.0, clip_limit=0.01) * 100.0
+    out = color.lab2rgb(lab)
+    return np.clip(out, 0.0, 1.0).astype(np.float32)
+
+
+def denoise_sharpen_restore(low_res: np.ndarray, output_shape: tuple[int, int]) -> np.ndarray:
+    """Engineering baseline: edge-preserving denoise (bilateral) then unsharp mask."""
+    from skimage.restoration import denoise_bilateral
+
+    up = bicubic_restore(low_res, output_shape)
+    den = denoise_bilateral(np.clip(up, 0.0, 1.0), sigma_color=0.08, sigma_spatial=2.0, channel_axis=-1)
+    smooth = ndimage.gaussian_filter(den, sigma=(1.0, 1.0, 0.0))
+    out = den + 0.6 * (den - smooth)
+    return np.clip(out, 0.0, 1.0).astype(np.float32)
+
+
+def dehaze_restore(low_res: np.ndarray, output_shape: tuple[int, int]) -> np.ndarray:
+    """Engineering baseline: dark-channel-prior dehazing on the bicubic upsample."""
+    up = bicubic_restore(low_res, output_shape)
+    img = np.clip(up, 0.0, 1.0)
+    dark = ndimage.minimum_filter(img.min(axis=2), size=9)
+    flat = dark.reshape(-1)
+    n_top = max(1, int(0.001 * flat.size))
+    idx = np.argpartition(flat, -n_top)[-n_top:]
+    a = np.clip(img.reshape(-1, 3)[idx].max(axis=0), 0.6, 1.0)
+    omega = 0.85
+    norm = img / a[None, None, :]
+    trans = 1.0 - omega * ndimage.minimum_filter(norm.min(axis=2), size=9)
+    trans = np.clip(trans, 0.25, 1.0)[..., None]
+    out = (img - a[None, None, :]) / trans + a[None, None, :]
+    return np.clip(out, 0.0, 1.0).astype(np.float32)
+
+
 def restore_all_methods(
     low_res: np.ndarray,
     mask: np.ndarray,

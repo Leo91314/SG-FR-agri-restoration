@@ -78,15 +78,27 @@ PYTHONPATH=src python3 -m cea_plus.run_experiment \
 
 ## Reproducibility
 
-All experiments use fixed random seeds, frozen downstream segmenters, and paired significance testing
-(paired t-test, Wilcoxon, 2000-sample bootstrap 95% CIs). Figure- and table-generation scripts live in
-`scripts/` (e.g. `cea_figures.py`, `cea_report.py`, `paper_tables.py`).
+All experiments use fixed random seeds, frozen downstream segmenters, and paired significance testing.
+Following peer review we report **image-level / seed-level percentile bootstrap 95% CIs** (the pairing
+unit is the image, not the patch, to avoid inflated significance from non-independent patches). Key
+revision scripts:
+
+- `scripts/cea_revision_stats.py` — re-aggregated image/seed-level CIs and the stratified
+  quality-gain correlation (ΔPSNR/ΔSSIM/ΔBoundaryF/ΔBRISQUE vs ΔmIoU).
+- `scripts/cea_engineering_baselines.py` — classical engineering baselines (CLAHE, unsharp, denoise+
+  sharpen, dark-channel dehaze) and fine-tuned learned restorers (compact U-Net, fine-tuned SwinIR).
+- `tests/test_split_integrity.py` — train/test split-integrity checks. The CWFID official split lists
+  image 28 in both train and test; `cea_plus.dataset.cwfid_split_ids` removes this leak from training.
+  WeedsGalore (multi-temporal) and CoFly (single-flight) residual leakage is disclosed in the paper.
+
+Figure- and table-generation scripts (`cea_figures.py`, `cea_report.py`, `paper_tables.py`) also live in
+`scripts/`.
 
 ## Citation
 
 ```bibtex
 @article{li2026sgfr,
-  title   = {Task-Oriented Semantic-Guided Restoration for Agricultural UAV Crop/Weed Segmentation under Structure and Composite Degradation},
+  title   = {Task-Oriented Semantic-Guided Restoration for Agricultural UAV Vegetation Segmentation under Structure and Composite Degradation},
   author  = {Li, Minghao},
   journal = {IEEE Access},
   year    = {2026}
