@@ -322,13 +322,20 @@ def _find_weedsgalore_sample_root(dataset_root: Path, sample_id: str) -> Path:
     return matches[0]
 
 
-def load_weedsgalore_dataset(dataset_root: Path, split: str = "test", limit: Optional[int] = None) -> list[AgriSample]:
+def load_weedsgalore_dataset(
+    dataset_root: Path,
+    split: str = "test",
+    limit: Optional[int] = None,
+    date_allowlist: Optional[set[str]] = None,
+) -> list[AgriSample]:
     dataset_root = Path(dataset_root)
     split_path = dataset_root / "splits" / f"{split}.txt"
     if not split_path.exists():
         raise FileNotFoundError(f"WeedsGalore split not found: {split_path}")
 
     sample_ids = [line.strip() for line in split_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if date_allowlist is not None:
+        sample_ids = [sid for sid in sample_ids if sid[:10] in date_allowlist]
     samples: list[AgriSample] = []
     for sample_id in sample_ids:
         sample_root = _find_weedsgalore_sample_root(dataset_root, sample_id)

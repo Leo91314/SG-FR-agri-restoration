@@ -1,4 +1,4 @@
-"""SAT-style main-text figures: leakage-free framework (Fig.1) and when-restoration-helps montage (Fig.4)."""
+"""SAT-style main-text figures: SG-FR framework (Fig.1/2) and when-restoration-helps montage (Fig.4)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -55,7 +55,7 @@ def _arrow(ax, p0, p1, color="#2c3e50"):
 
 
 def fig1_framework_sat():
-    """Three-column leakage-free narrative: training-only | blind restoration | frozen evaluation."""
+    """Three-column narrative: training supervision | regime-specific blind inference | frozen evaluation."""
     fig, ax = plt.subplots(figsize=(12.5, 4.2))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
@@ -63,7 +63,7 @@ def fig1_framework_sat():
 
     titles = [
         "(A) Training only",
-        "(B) Blind restoration (inference)",
+        "(B) Regime-specific blind inference",
         "(C) Task-oriented evaluation",
     ]
     for i, title in enumerate(titles):
@@ -134,10 +134,11 @@ def fig1_framework_sat():
         style="italic",
     )
 
-    out = FIGDIR / "fig1_framework.png"
-    fig.savefig(out, bbox_inches="tight", facecolor="white")
+    for name in ("fig1_framework.png", "fig2_framework.png"):
+        out = FIGDIR / name
+        fig.savefig(out, bbox_inches="tight", facecolor="white")
+        print("wrote", out)
     plt.close(fig)
-    print("wrote", out)
 
 
 def fig4_when_helps():

@@ -5,10 +5,11 @@ Source code and evaluation pipeline for the paper:
 > **Task-Oriented Semantic-Guided Restoration for Agricultural UAV Crop/Weed Segmentation under Structure and Composite Degradation**
 > Minghao Li, School of Mathematics and Statistics, Anqing Normal University. Submitted to *IEEE Access*.
 
-This repository studies **when** a lightweight, blind, semantic-guided restorer helps downstream
-crop/weed segmentation, instead of optimizing image-quality metrics (PSNR/SSIM/BRISQUE) in isolation.
-Restoration is scored by the mIoU of a **frozen, clean-trained** segmenter (SegFormer-B0, DeepLabV3+)
-under a leakage-free protocol with paired statistical testing.
+This repository studies **when** a lightweight, regime-specific blind restorer with training-only
+semantic supervision (SG-FR) helps downstream crop/weed segmentation, instead of optimizing
+image-quality metrics (PSNR/SSIM/BRISQUE) in isolation. Restoration is scored by the mIoU of a
+**frozen, clean-trained** segmenter (SegFormer-B0, DeepLabV3+) under a **paired held-out evaluation
+protocol** (overlap-controlled where identifiable) with image-level bootstrap CIs.
 
 ## Key idea
 
@@ -20,7 +21,7 @@ I_hat = B(I_d) + alpha ⊙ H(I_d)
 ```
 
 A crop-semantic head supplies **auxiliary multi-task supervision during training only** (inert at
-inference: no masks, no degradation labels). The restorer is never trained against the evaluation mIoU.
+inference: no masks, no degradation labels at test time; one model per degradation regime). The restorer is never trained against the evaluation mIoU.
 
 ## Repository layout
 
@@ -87,6 +88,8 @@ revision scripts:
   quality-gain correlation (ΔPSNR/ΔSSIM/ΔBoundaryF/ΔBRISQUE vs ΔmIoU).
 - `scripts/cea_engineering_baselines.py` — classical engineering baselines (CLAHE, unsharp, denoise+
   sharpen, dark-channel dehaze) and fine-tuned learned restorers (compact U-Net, fine-tuned SwinIR).
+- `scripts/cea_semantic_source.py` — GT vs SegFormer/DeepLab pseudo-mask supervision with cross-evaluator check.
+- `scripts/cea_date_disjoint_sanity.py` — WeedsGalore date-disjoint robustness (train May 25/30, test June 6/15).
 - `tests/test_split_integrity.py` — train/test split-integrity checks. The CWFID official split lists
   image 28 in both train and test; `cea_plus.dataset.cwfid_split_ids` removes this leak from training.
   WeedsGalore (multi-temporal) and CoFly (single-flight) residual leakage is disclosed in the paper.
