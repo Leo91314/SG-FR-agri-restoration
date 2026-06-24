@@ -81,18 +81,23 @@ PYTHONPATH=src python3 -m cea_plus.run_experiment \
 
 All experiments use fixed random seeds, frozen downstream segmenters, and paired significance testing.
 Following peer review we report **image-level / seed-level percentile bootstrap 95% CIs** (the pairing
-unit is the image, not the patch, to avoid inflated significance from non-independent patches). Key
-revision scripts:
+unit is the image, not the patch, to avoid inflated significance from non-independent patches).
 
-- `scripts/cea_revision_stats.py` — re-aggregated image/seed-level CIs and the stratified
-  quality-gain correlation (ΔPSNR/ΔSSIM/ΔBoundaryF/ΔBRISQUE vs ΔmIoU).
-- `scripts/cea_engineering_baselines.py` — classical engineering baselines (CLAHE, unsharp, denoise+
-  sharpen, dark-channel dehaze) and fine-tuned learned restorers (compact U-Net, fine-tuned SwinIR).
-- `scripts/cea_semantic_source.py` — GT vs SegFormer/DeepLab pseudo-mask supervision with cross-evaluator check.
-- `scripts/cea_date_disjoint_sanity.py` — WeedsGalore date-disjoint robustness (train May 25/30, test June 6/15).
-- `tests/test_split_integrity.py` — train/test split-integrity checks. The CWFID official split lists
-  image 28 in both train and test; `cea_plus.dataset.cwfid_split_ids` removes this leak from training.
-  WeedsGalore (multi-temporal) and CoFly (single-flight) residual leakage is disclosed in the paper.
+See **[REPRODUCIBILITY.md](REPRODUCIBILITY.md)** for table→script mapping, Hugging Face
+checkpoint IDs, BRISQUE (`piq`) version, seeds, and bootstrap defaults. Pinned deps:
+`requirements-paper.txt`.
+
+Key revision scripts:
+
+| Paper table | Script |
+|---|---|
+| Main results (`tab:mainresults`) | `scripts/cea_exp.py`, `cea_revision_stats.py` |
+| Strong baselines | `cea_strong_baselines.py`, `cea_engineering_baselines.py` |
+| Pseudo-mask source | `cea_semantic_source.py` |
+| Date-disjoint sanity | `cea_date_disjoint_sanity.py` |
+| Near-duplicate sensitivity | `cea_near_duplicate_sanity.py` |
+| Segmenter budget ablation | `cea_segmenter_budget_ablation.py` |
+| Split integrity tests | `tests/test_split_integrity.py` |
 
 Figure- and table-generation scripts (`cea_figures.py`, `cea_report.py`, `paper_tables.py`) also live in
 `scripts/`.

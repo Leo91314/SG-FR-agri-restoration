@@ -1,0 +1,14 @@
+# Pinned deps for reproducing IEEE Access experiments (Python >= 3.10)
+numpy>=1.26,<3
+scipy>=1.11
+scikit-image>=0.22
+pillow>=10.0
+matplotlib>=3.8
+torch>=2.1
+torchvision>=0.16
+transformers>=4.36
+timm>=0.9
+piq>=0.8.0
+opencv-python-headless>=4.8
+pandas>=2.0
+pytest>=7.4
